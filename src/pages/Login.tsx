@@ -1,10 +1,36 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { Shield, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/dashboard");
+      }
+    });
+  }, [navigate]);
+
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) {
+      toast.error("Failed to sign in with Google");
+      console.error("Google login error:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6">
@@ -18,7 +44,7 @@ const Login = () => {
 
         <div className="space-y-4">
           <Button
-            onClick={() => navigate("/onboarding")}
+            onClick={handleGoogleLogin}
             className="w-full btn-primary h-14 text-base flex items-center justify-center gap-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
