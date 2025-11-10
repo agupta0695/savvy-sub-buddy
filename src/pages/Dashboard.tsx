@@ -27,7 +27,9 @@ const Dashboard = () => {
 
   const getDaysLeft = (nextRenewal: string) => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate calculation
     const renewalDate = new Date(nextRenewal);
+    renewalDate.setHours(0, 0, 0, 0); // Reset to start of day
     const diffTime = renewalDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;

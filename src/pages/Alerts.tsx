@@ -1,17 +1,58 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
+import { useAlerts, useUpdateAlert } from "@/hooks/useAlerts";
+import { useToast } from "@/hooks/use-toast";
 
-const alerts = [
-  { id: 1, name: "Gym Membership", amount: 2500, icon: "💪", daysLeft: 2, urgency: "critical" },
-  { id: 2, name: "Netflix", amount: 649, icon: "🎬", daysLeft: 7, urgency: "warning" },
-  { id: 3, name: "Spotify Premium", amount: 119, icon: "🎵", daysLeft: 14, urgency: "info" },
-];
+const categoryIcons: Record<string, string> = {
+  Entertainment: "🎬",
+  Fitness: "💪",
+  Software: "🎨",
+  Shopping: "🛍️",
+  Food: "🍔",
+  Other: "📦",
+};
 
 const Alerts = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [filter, setFilter] = useState("All");
+  const { data: alerts = [], isLoading } = useAlerts(filter);
+  const updateAlert = useUpdateAlert();
+
+  const getDaysLeft = (nextRenewal: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate calculation
+    const renewalDate = new Date(nextRenewal);
+    renewalDate.setHours(0, 0, 0, 0); // Reset to start of day
+    const diffTime = renewalDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const getUrgencyFromDays = (daysLeft: number) => {
+    if (daysLeft <= 2) return "critical";
+    if (daysLeft <= 7) return "warning";
+    return "info";
+  };
+
+  const handleKeepIt = async (alertId: string) => {
+    try {
+      await updateAlert.mutateAsync({ alertId, action: "kept" });
+      toast({
+        title: "Alert dismissed",
+        description: "We'll remind you again closer to the renewal date.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update alert",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
@@ -61,63 +102,84 @@ const Alerts = () => {
           </button>
         </div>
 
-        <div className="space-y-4">
-          {alerts.map((alert) => (
-            <div
-              key={alert.id}
-              className={`card-glass ${getUrgencyColor(alert.urgency)}`}
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-2xl">
-                  {alert.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{alert.name}</h3>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span
-                      className={`text-sm font-medium ${
-                        alert.urgency === "critical"
-                          ? "text-orange-600"
-                          : alert.urgency === "warning"
-                          ? "text-accent"
-                          : "text-primary"
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32 w-full" />
+            ))}
+          </div>
+        ) : alerts.length === 0 ? (
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-4">
+              <span className="text-3xl">✅</span>
+            </div>
+            <p className="text-muted-foreground">
+              All caught up! No more urgent renewals.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {alerts.map((alert) => {
+              const daysLeft = getDaysLeft(alert.subscription.next_renewal);
+              const urgency = getUrgencyFromDays(daysLeft);
+              const subscription = alert.subscription;
+
+              return (
+                <div
+                  key={alert.id}
+                  className={`card-glass ${getUrgencyColor(urgency)}`}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-2xl">
+                      {categoryIcons[subscription.category] || categoryIcons.Other}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{subscription.name}</h3>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span
+                          className={`text-sm font-medium ${
+                            urgency === "critical"
+                              ? "text-orange-600"
+                              : urgency === "warning"
+                              ? "text-accent"
+                              : "text-primary"
+                          }`}
+                        >
+                          {daysLeft} days left
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-lg font-bold text-foreground">
+                          ₹{subscription.amount.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 h-11"
+                      onClick={() => handleKeepIt(alert.id)}
+                      disabled={updateAlert.isPending}
+                    >
+                      Keep It
+                    </Button>
+                    <Button
+                      onClick={() => navigate("/cancel-guide")}
+                      className={`flex-1 h-11 ${
+                        urgency === "critical"
+                          ? "bg-orange-500 hover:bg-orange-600 text-white"
+                          : "bg-accent hover:bg-accent/90 text-accent-foreground"
                       }`}
                     >
-                      {alert.daysLeft} days left
-                    </span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-lg font-bold text-foreground">₹{alert.amount}</span>
+                      Cancel Guide
+                    </Button>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1 h-11">
-                  Keep It
-                </Button>
-                <Button
-                  onClick={() => navigate("/cancel-guide")}
-                  className={`flex-1 h-11 ${
-                    alert.urgency === "critical"
-                      ? "bg-orange-500 hover:bg-orange-600 text-white"
-                      : "bg-accent hover:bg-accent/90 text-accent-foreground"
-                  }`}
-                >
-                  Cancel Guide
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-4">
-            <span className="text-3xl">✅</span>
+              );
+            })}
           </div>
-          <p className="text-muted-foreground">
-            All caught up! No more urgent renewals.
-          </p>
-        </div>
+        )}
       </main>
     </div>
   );

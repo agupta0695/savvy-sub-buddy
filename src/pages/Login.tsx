@@ -24,19 +24,63 @@ const Login = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/dashboard");
+        checkUserAndRedirect(session.user.id);
       }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session) {
-        navigate("/dashboard");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        await checkUserAndRedirect(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        navigate("/");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkUserAndRedirect = async (userId: string) => {
+    try {
+      // Check if user record exists in our users table
+      const { data: userData, error } = await supabase
+        .from("users")
+        .select("id, created_at")
+        .eq("id", userId)
+        .single();
+
+      if (error && error.code === "PGRST116") {
+        // User doesn't exist in our table, create it
+        const { data: authUser } = await supabase.auth.getUser();
+        if (authUser.user) {
+          await supabase.from("users").insert({
+            id: authUser.user.id,
+            email: authUser.user.email!,
+            name: authUser.user.user_metadata?.name || authUser.user.user_metadata?.full_name || null,
+          });
+        }
+        // New user - redirect to onboarding
+        navigate("/onboarding");
+      } else if (userData) {
+        // Check if user was created in the last 5 minutes (likely new user)
+        const createdAt = new Date(userData.created_at);
+        const now = new Date();
+        const diffMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60);
+        
+        if (diffMinutes < 5) {
+          // New user - show onboarding
+          navigate("/onboarding");
+        } else {
+          // Existing user - go to dashboard
+          navigate("/dashboard");
+        }
+      }
+    } catch (error) {
+      console.error("Error checking user:", error);
+      // On error, default to dashboard
+      navigate("/dashboard");
+    }
+  };
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,11 +90,11 @@ const Login = () => {
       emailSchema.parse(email);
       passwordSchema.parse(password);
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/onboarding`,
           data: {
             name: name || email.split("@")[0],
           },
@@ -60,15 +104,26 @@ const Login = () => {
       if (error) {
         if (error.message.includes("already registered")) {
           toast.error("This email is already registered. Please login instead.");
+        } else if (error.message.includes("Email rate limit exceeded")) {
+          toast.error("Too many signup attempts. Please try again later.");
         } else {
           toast.error(error.message);
         }
-      } else {
-        toast.success("Account created successfully!");
+      } else if (data.user) {
+        // Create user record in our database
+        await supabase.from("users").insert({
+          id: data.user.id,
+          email: data.user.email!,
+          name: name || email.split("@")[0],
+        });
+        
+        toast.success("Account created successfully! Check your email to verify.");
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -89,11 +144,21 @@ const Login = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password. Please try again.");
+        } else if (error.message.includes("Email not confirmed")) {
+          toast.error("Please verify your email before logging in.");
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.success("Welcome back!");
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -101,15 +166,37 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/onboarding`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
 
-    if (error) {
-      toast.error("Failed to sign in with Google");
+      if (error) {
+        console.error("Google OAuth error:", error);
+        
+        if (error.message.includes("popup")) {
+          toast.error("Pop-up blocked. Please allow pop-ups and try again.");
+        } else if (error.message.includes("network")) {
+          toast.error("Network error. Please check your connection and try again.");
+        } else if (error.message.includes("OAuth")) {
+          toast.error("Google sign-in is not configured. Please contact support.");
+        } else {
+          toast.error(`Failed to sign in with Google: ${error.message}`);
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error during Google sign-in:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -5,18 +5,57 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const categories = ["Entertainment", "Fitness", "Software", "Shopping", "Food", "Other"];
 
 const AddSubscription = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState("Entertainment");
   const [formData, setFormData] = useState({
     name: "",
     amount: "",
     billingCycle: "Monthly",
     renewalDate: "",
+  });
+
+  const addSubscription = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase.from("subscriptions").insert({
+        user_id: user.id,
+        name: formData.name,
+        amount: parseFloat(formData.amount),
+        category: selectedCategory,
+        cycle: formData.billingCycle,
+        next_renewal: formData.renewalDate,
+        is_active: true,
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      queryClient.invalidateQueries({ queryKey: ["monthly-spending"] });
+      toast({
+        title: "🎉 Awesome!",
+        description: "Subscription added! We'll remind you 7 days before renewal.",
+      });
+      setTimeout(() => navigate("/dashboard"), 1000);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add subscription. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error adding subscription:", error);
+    },
   });
 
   const handleSubmit = () => {
@@ -29,12 +68,7 @@ const AddSubscription = () => {
       return;
     }
 
-    toast({
-      title: "🎉 Awesome!",
-      description: "Subscription added! We'll remind you 7 days before renewal.",
-    });
-    
-    setTimeout(() => navigate("/dashboard"), 1000);
+    addSubscription.mutate();
   };
 
   return (
@@ -137,8 +171,12 @@ const AddSubscription = () => {
             ✨ This takes less than 2 minutes!
           </p>
 
-          <Button onClick={handleSubmit} className="w-full btn-primary h-14 text-base">
-            Add Subscription
+          <Button
+            onClick={handleSubmit}
+            className="w-full btn-primary h-14 text-base"
+            disabled={addSubscription.isPending}
+          >
+            {addSubscription.isPending ? "Adding..." : "Add Subscription"}
           </Button>
         </div>
       </main>

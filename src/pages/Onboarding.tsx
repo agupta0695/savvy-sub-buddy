@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import onboarding1 from "@/assets/onboarding-1.png";
 import onboarding2 from "@/assets/onboarding-2.png";
 import onboarding3 from "@/assets/onboarding-3.png";
@@ -26,18 +28,52 @@ const onboardingScreens = [
 
 const Onboarding = () => {
   const [currentScreen, setCurrentScreen] = useState(0);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        // Not authenticated, redirect to login
+        navigate("/");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const completeOnboarding = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Update user record to mark onboarding as complete (optional)
+        // You can add an 'onboarding_completed' field to the users table if needed
+        
+        toast.success("Welcome to Savvy Sub Buddy! 🎉");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+      toast.error("Something went wrong. Redirecting to dashboard...");
+      navigate("/dashboard");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNext = () => {
     if (currentScreen < onboardingScreens.length - 1) {
       setCurrentScreen(currentScreen + 1);
     } else {
-      navigate("/dashboard");
+      completeOnboarding();
     }
   };
 
   const handleSkip = () => {
-    navigate("/dashboard");
+    completeOnboarding();
   };
 
   return (
@@ -80,12 +116,20 @@ const Onboarding = () => {
         </div>
 
         {currentScreen === onboardingScreens.length - 1 ? (
-          <Button onClick={handleNext} className="btn-primary w-full max-w-md">
-            Let's Get Started
-            <ArrowRight className="ml-2 w-5 h-5" />
+          <Button 
+            onClick={handleNext} 
+            className="btn-primary w-full max-w-md"
+            disabled={loading}
+          >
+            {loading ? "Setting up..." : "Let's Get Started"}
+            {!loading && <ArrowRight className="ml-2 w-5 h-5" />}
           </Button>
         ) : (
-          <Button onClick={handleNext} className="btn-primary w-full max-w-md">
+          <Button 
+            onClick={handleNext} 
+            className="btn-primary w-full max-w-md"
+            disabled={loading}
+          >
             Next
           </Button>
         )}
