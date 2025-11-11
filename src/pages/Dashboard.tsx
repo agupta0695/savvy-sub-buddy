@@ -95,7 +95,7 @@ const Dashboard = () => {
         </div>
 
         {/* Alert Banner */}
-        {!alertsLoading && urgentCount > 0 && (
+        {!alertsLoading && !subsLoading && urgentCount > 0 && subscriptionCount > 0 && (
           <div className="bg-accent/10 border-2 border-accent rounded-2xl p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />

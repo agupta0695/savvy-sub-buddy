@@ -27,10 +27,11 @@ export const useAlerts = (filter: string = "All") => {
         .from("alerts")
         .select(`
           *,
-          subscription:subscriptions(name, amount, category, next_renewal)
+          subscription:subscriptions!inner(name, amount, category, next_renewal, is_active)
         `)
         .eq("user_id", user.id)
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .eq("subscription.is_active", true);
 
       if (filter === "Critical") {
         query = query.eq("alert_type", "critical");
