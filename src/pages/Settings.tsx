@@ -125,7 +125,7 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">SMS Alerts (7-day renewals)</span>
+                    <span className="font-medium">SMS Alerts (Premium)</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <Switch
@@ -138,7 +138,7 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">WhatsApp Alerts</span>
+                    <span className="font-medium">WhatsApp Alerts (Premium)</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <Switch

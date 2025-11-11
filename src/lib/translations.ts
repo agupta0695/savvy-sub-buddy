@@ -257,7 +257,7 @@ export const translations: Record<Language, Translations> = {
     smsAutoImport: 'SMS Auto-Import',
     familySharing: 'Family Sharing',
     advancedAnalytics: 'Advanced Analytics',
-    whatsappAlerts: 'WhatsApp Alerts',
+    whatsappAlerts: 'WhatsApp Alerts (Premium)',
 
     // Settings
     settings: 'Settings',
@@ -265,7 +265,7 @@ export const translations: Record<Language, Translations> = {
     saved: 'saved',
     notifications: 'Notifications',
     pushNotifications: 'Push Notifications',
-    smsAlerts: 'SMS Alerts (7-day renewals)',
+    smsAlerts: 'SMS Alerts (Premium)',
     preferences: 'Preferences',
     language: 'Language',
     upgradeNow: 'Upgrade Now',
