@@ -7,8 +7,34 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 const categories = ["Entertainment", "Fitness", "Software", "Shopping", "Food", "Other"];
+
+// Validation schemas
+const subscriptionSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(1, "Subscription name is required")
+    .max(100, "Name must be less than 100 characters"),
+  amount: z.number()
+    .positive("Amount must be greater than 0")
+    .max(1000000, "Amount seems unrealistic")
+    .refine((val) => Number.isFinite(val), "Invalid amount"),
+  renewalDate: z.string()
+    .refine((date) => {
+      const selectedDate = new Date(date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selectedDate >= today;
+    }, "Renewal date cannot be in the past")
+    .refine((date) => {
+      const selectedDate = new Date(date);
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 10);
+      return selectedDate <= maxDate;
+    }, "Renewal date is too far in the future"),
+});
 
 const AddSubscription = () => {
   const navigate = useNavigate();
@@ -48,27 +74,41 @@ const AddSubscription = () => {
       });
       setTimeout(() => navigate("/dashboard"), 1000);
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to add subscription. Please try again.",
         variant: "destructive",
       });
-      console.error("Error adding subscription:", error);
+      // Error logging removed for security - use proper error tracking service in production
     },
   });
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.amount || !formData.renewalDate) {
-      toast({
-        title: "Oops!",
-        description: "Please fill in all required fields",
-        variant: "destructive",
+    try {
+      // Validate input data
+      subscriptionSchema.parse({
+        name: formData.name,
+        amount: parseFloat(formData.amount),
+        renewalDate: formData.renewalDate,
       });
-      return;
-    }
 
-    addSubscription.mutate();
+      addSubscription.mutate();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (

@@ -76,7 +76,7 @@ const Login = () => {
         }
       }
     } catch (error) {
-      console.error("Error checking user:", error);
+      // Error logging removed for security - use proper error tracking service in production
       // On error, default to dashboard
       navigate("/dashboard");
     }
@@ -180,7 +180,7 @@ const Login = () => {
       });
 
       if (error) {
-        console.error("Google OAuth error:", error);
+        // Error logging removed for security - use proper error tracking service in production
         
         if (error.message.includes("popup")) {
           toast.error("Pop-up blocked. Please allow pop-ups and try again.");
@@ -193,7 +193,7 @@ const Login = () => {
         }
       }
     } catch (error) {
-      console.error("Unexpected error during Google sign-in:", error);
+      // Error logging removed for security - use proper error tracking service in production
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -374,13 +374,6 @@ const Login = () => {
             <span className="text-xs text-muted-foreground">Privacy-first</span>
           </div>
         </div>
-
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="w-full text-center text-sm text-primary hover:underline"
-        >
-          Explore demo first
-        </button>
       </div>
     </div>
   );

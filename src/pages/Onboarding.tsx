@@ -56,7 +56,7 @@ const Onboarding = () => {
         navigate("/dashboard");
       }
     } catch (error) {
-      console.error("Error completing onboarding:", error);
+      // Error logging removed for security - use proper error tracking service in production
       toast.error("Something went wrong. Redirecting to dashboard...");
       navigate("/dashboard");
     } finally {
