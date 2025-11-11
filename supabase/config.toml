@@ -1,1 +1,10 @@
 project_id = "cwuwjykejpiygzawwium"
+
+[auth]
+# Enable leaked password protection for enhanced security
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.security]
+# Enable leaked password protection to prevent use of compromised passwords
+leaked_password_protection = true
