@@ -375,16 +375,12 @@ const Login = () => {
           </div>
         </div>
 
-        <Button
-          onClick={() => {
-            localStorage.setItem("guestMode", "true");
-            navigate("/dashboard");
-          }}
-          variant="outline"
-          className="w-full"
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="w-full text-center text-sm text-primary hover:underline"
         >
-          Continue as Guest (Demo Mode)
-        </Button>
+          Explore demo first
+        </button>
       </div>
     </div>
   );

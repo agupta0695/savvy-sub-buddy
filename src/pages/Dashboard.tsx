@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import heroUser from "@/assets/hero-user.png";
 import { useSubscriptions, useMonthlySpending, useExpiringSubscriptions } from "@/hooks/useSubscriptions";
-import { useAlerts } from "@/hooks/useAlerts";
 
 const categoryIcons: Record<string, string> = {
   Entertainment: "🎬",
@@ -20,11 +19,11 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { data: subscriptions = [], isLoading: subsLoading } = useSubscriptions();
   const { data: monthlySpending = 0, isLoading: spendingLoading } = useMonthlySpending();
-  const { data: alerts = [], isLoading: alertsLoading } = useAlerts("All");
+  const { data: expiringSubscriptions = [], isLoading: expiringLoading } = useExpiringSubscriptions(7);
 
   const annualCost = monthlySpending * 12;
   const subscriptionCount = subscriptions.length;
-  const urgentCount = alerts.length;
+  const urgentCount = expiringSubscriptions.length;
 
   const getDaysLeft = (nextRenewal: string) => {
     const today = new Date();
@@ -95,7 +94,7 @@ const Dashboard = () => {
         </div>
 
         {/* Alert Banner */}
-        {!alertsLoading && urgentCount > 0 && (
+        {!expiringLoading && urgentCount > 0 && (
           <div className="bg-accent/10 border-2 border-accent rounded-2xl p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />

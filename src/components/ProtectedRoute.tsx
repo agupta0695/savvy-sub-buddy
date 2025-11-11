@@ -7,15 +7,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for guest mode
-    const isGuestMode = localStorage.getItem("guestMode") === "true";
-    
-    if (isGuestMode) {
-      setAuthenticated(true);
-      setLoading(false);
-      return;
-    }
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setAuthenticated(!!session);
       setLoading(false);
