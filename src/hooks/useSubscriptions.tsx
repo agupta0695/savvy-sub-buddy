@@ -39,9 +39,7 @@ export const useMonthlySpending = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase.rpc("calculate_monthly_spending", {
-        p_user_id: user.id,
-      });
+      const { data, error } = await supabase.rpc("calculate_monthly_spending");
 
       if (error) throw error;
       return data as number;

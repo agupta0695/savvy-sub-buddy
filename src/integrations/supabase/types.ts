@@ -431,10 +431,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_monthly_spending: {
-        Args: { p_user_id: string }
-        Returns: number
-      }
+      calculate_monthly_spending:
+        | { Args: { p_user_id: string }; Returns: number }
+        | { Args: never; Returns: number }
       get_expiring_subscriptions: {
         Args: { days_ahead?: number }
         Returns: {
