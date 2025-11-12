@@ -104,44 +104,6 @@ export type Database = {
         }
         Relationships: []
       }
-      family_members: {
-        Row: {
-          accepted_at: string | null
-          id: string
-          invited_at: string | null
-          member_email: string
-          member_name: string | null
-          primary_user_id: string
-          status: string | null
-        }
-        Insert: {
-          accepted_at?: string | null
-          id?: string
-          invited_at?: string | null
-          member_email: string
-          member_name?: string | null
-          primary_user_id: string
-          status?: string | null
-        }
-        Update: {
-          accepted_at?: string | null
-          id?: string
-          invited_at?: string | null
-          member_email?: string
-          member_name?: string | null
-          primary_user_id?: string
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "family_members_primary_user_id_fkey"
-            columns: ["primary_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       payment_transactions: {
         Row: {
           amount: number
