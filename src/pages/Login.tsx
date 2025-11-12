@@ -206,7 +206,7 @@ const Login = () => {
         <div className="text-center space-y-4">
           <Logo className="justify-center" />
           <p className="text-muted-foreground text-base">
-            Privacy-First Subscription Manager
+            Never forget a Subscription
           </p>
         </div>
 

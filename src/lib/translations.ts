@@ -154,7 +154,7 @@ export const translations: Record<Language, Translations> = {
   en: {
     // App Name
     appName: 'SubSentry',
-    tagline: 'Privacy-First Subscription Manager',
+    tagline: 'Never forget a Subscription',
 
     // Login Screen
     continueWithGoogle: '🔐 Continue with Google',
