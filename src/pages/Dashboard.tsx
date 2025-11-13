@@ -22,16 +22,6 @@ const Dashboard = () => {
   const { data: monthlySpending = 0, isLoading: spendingLoading } = useMonthlySpending();
   const { data: alerts = [], isLoading: alertsLoading } = useAlerts("All");
 
-  const annualCost = monthlySpending * 12;
-  const subscriptionCount = subscriptions.length;
-  
-  // Filter alerts to only show those with 7 days or less
-  const urgentAlerts = alerts.filter(alert => {
-    const daysLeft = getDaysLeft(alert.subscription.next_renewal);
-    return daysLeft <= 7 && daysLeft >= 0;
-  });
-  const urgentCount = urgentAlerts.length;
-
   const getDaysLeft = (nextRenewal: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Reset to start of day for accurate calculation
@@ -41,6 +31,16 @@ const Dashboard = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  const annualCost = monthlySpending * 12;
+  const subscriptionCount = subscriptions.length;
+  
+  // Filter alerts to only show those with 7 days or less
+  const urgentAlerts = alerts.filter(alert => {
+    const daysLeft = getDaysLeft(alert.subscription.next_renewal);
+    return daysLeft <= 7 && daysLeft >= 0;
+  });
+  const urgentCount = urgentAlerts.length;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
