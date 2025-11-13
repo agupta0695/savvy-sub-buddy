@@ -24,7 +24,13 @@ const Dashboard = () => {
 
   const annualCost = monthlySpending * 12;
   const subscriptionCount = subscriptions.length;
-  const urgentCount = alerts.length;
+  
+  // Filter alerts to only show those with 7 days or less
+  const urgentAlerts = alerts.filter(alert => {
+    const daysLeft = getDaysLeft(alert.subscription.next_renewal);
+    return daysLeft <= 7 && daysLeft >= 0;
+  });
+  const urgentCount = urgentAlerts.length;
 
   const getDaysLeft = (nextRenewal: string) => {
     const today = new Date();
