@@ -205,7 +205,10 @@ const SubscriptionDetail = () => {
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          <Button className="w-full btn-primary h-14">
+          <Button 
+            className="w-full btn-primary h-14"
+            onClick={() => navigate(`/edit-subscription/${id}`)}
+          >
             <Edit className="w-5 h-5 mr-2" />
             Edit Details
           </Button>

@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUpdateSubscription } from "@/hooks/useSubscriptions";
 
 const categories = ["Entertainment", "Fitness", "Software", "Shopping", "Food", "Other"];
 
@@ -38,6 +40,7 @@ const subscriptionSchema = z.object({
 
 const AddSubscription = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState("Entertainment");
@@ -47,6 +50,39 @@ const AddSubscription = () => {
     billingCycle: "Monthly",
     renewalDate: "",
   });
+
+  const isEditMode = !!id;
+
+  // Fetch existing subscription data if in edit mode
+  const { data: existingSubscription, isLoading: isLoadingSubscription } = useQuery({
+    queryKey: ["subscription", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: isEditMode,
+  });
+
+  // Populate form with existing data when in edit mode
+  useEffect(() => {
+    if (existingSubscription) {
+      setFormData({
+        name: existingSubscription.name,
+        amount: existingSubscription.amount.toString(),
+        billingCycle: existingSubscription.cycle,
+        renewalDate: existingSubscription.next_renewal,
+      });
+      setSelectedCategory(existingSubscription.category);
+    }
+  }, [existingSubscription]);
+
+  const updateSubscription = useUpdateSubscription();
 
   const addSubscription = useMutation({
     mutationFn: async () => {
@@ -93,7 +129,38 @@ const AddSubscription = () => {
         renewalDate: formData.renewalDate,
       });
 
-      addSubscription.mutate();
+      if (isEditMode && id) {
+        updateSubscription.mutate(
+          {
+            id,
+            updates: {
+              name: formData.name,
+              amount: parseFloat(formData.amount),
+              category: selectedCategory,
+              cycle: formData.billingCycle,
+              next_renewal: formData.renewalDate,
+            },
+          },
+          {
+            onSuccess: () => {
+              toast({
+                title: "✅ Updated!",
+                description: "Subscription updated successfully.",
+              });
+              setTimeout(() => navigate(`/subscription/${id}`), 1000);
+            },
+            onError: () => {
+              toast({
+                title: "Error",
+                description: "Failed to update subscription. Please try again.",
+                variant: "destructive",
+              });
+            },
+          }
+        );
+      } else {
+        addSubscription.mutate();
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -111,6 +178,31 @@ const AddSubscription = () => {
     }
   };
 
+  if (isEditMode && isLoadingSubscription) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 bg-background border-b border-border px-6 py-4">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl font-semibold">Edit Subscription</h1>
+            <span className="text-sm text-muted-foreground">Loading...</span>
+          </div>
+        </header>
+        <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 bg-background border-b border-border px-6 py-4">
@@ -121,8 +213,8 @@ const AddSubscription = () => {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-semibold">Add Subscription</h1>
-          <span className="text-sm text-muted-foreground">Step 1 of 3</span>
+          <h1 className="text-xl font-semibold">{isEditMode ? "Edit Subscription" : "Add Subscription"}</h1>
+          <span className="text-sm text-muted-foreground">{isEditMode ? "" : "Step 1 of 3"}</span>
         </div>
       </header>
 
@@ -214,9 +306,15 @@ const AddSubscription = () => {
           <Button
             onClick={handleSubmit}
             className="w-full btn-primary h-14 text-base"
-            disabled={addSubscription.isPending}
+            disabled={addSubscription.isPending || updateSubscription.isPending}
           >
-            {addSubscription.isPending ? "Adding..." : "Add Subscription"}
+            {isEditMode
+              ? updateSubscription.isPending
+                ? "Updating..."
+                : "Update Subscription"
+              : addSubscription.isPending
+              ? "Adding..."
+              : "Add Subscription"}
           </Button>
         </div>
       </main>

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Subscription {
@@ -64,6 +64,40 @@ export const useExpiringSubscriptions = (daysAhead: number = 7) => {
         next_renewal: string;
         days_left: number;
       }>;
+    },
+  });
+};
+
+export const useUpdateSubscription = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      updates 
+    }: { 
+      id: string; 
+      updates: {
+        name?: string;
+        amount?: number;
+        category?: string;
+        cycle?: string;
+        next_renewal?: string;
+        payment_method?: string;
+        notes?: string;
+      }
+    }) => {
+      const { error } = await supabase
+        .from("subscriptions")
+        .update(updates)
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      queryClient.invalidateQueries({ queryKey: ["monthly-spending"] });
     },
   });
 };
