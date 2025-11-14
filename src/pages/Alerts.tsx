@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { useAlerts, useUpdateAlert } from "@/hooks/useAlerts";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categoryIcons: Record<string, string> = {
   Entertainment: "🎬",
@@ -18,6 +19,7 @@ const categoryIcons: Record<string, string> = {
 const Alerts = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [filter, setFilter] = useState("All");
   const { data: alerts = [], isLoading } = useAlerts(filter);
   const updateAlert = useUpdateAlert();
@@ -78,7 +80,7 @@ const Alerts = () => {
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-semibold">Renewal Alerts</h1>
+            <h1 className="text-xl font-semibold">{t.renewalAlerts}</h1>
           </div>
           <select
             value={filter}
@@ -114,7 +116,7 @@ const Alerts = () => {
               <span className="text-3xl">✅</span>
             </div>
             <p className="text-muted-foreground">
-              All caught up! No more urgent renewals.
+              {t.noUpcomingRenewals}
             </p>
           </div>
         ) : (
@@ -145,7 +147,7 @@ const Alerts = () => {
                               : "text-primary"
                           }`}
                         >
-                          {daysLeft} days left
+                          {daysLeft} {t.daysLeft}
                         </span>
                         <span className="text-muted-foreground">•</span>
                         <span className="text-lg font-bold text-foreground">
@@ -162,7 +164,7 @@ const Alerts = () => {
                       onClick={() => handleKeepIt(alert.id)}
                       disabled={updateAlert.isPending}
                     >
-                      Keep It
+                      {t.keepIt}
                     </Button>
                     <Button
                       onClick={() => navigate("/cancel-guide")}
@@ -172,7 +174,7 @@ const Alerts = () => {
                           : "bg-accent hover:bg-accent/90 text-accent-foreground"
                       }`}
                     >
-                      Cancel Guide
+                      {t.cancelGuide}
                     </Button>
                   </div>
                 </div>
