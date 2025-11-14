@@ -263,6 +263,7 @@ const AddSubscription = () => {
               id="date"
               type="date"
               className="mt-2 h-14"
+              min={new Date().toISOString().split('T')[0]}
               value={formData.renewalDate}
               onChange={(e) => setFormData({ ...formData, renewalDate: e.target.value })}
             />
