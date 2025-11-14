@@ -25,7 +25,14 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     setT(getTranslations(lang));
     
     // Show toast notification
-    const langName = lang === 'hi' ? 'हिंदी' : 'English';
+    const langNames: Record<Language, string> = {
+      'en': 'English',
+      'hi': 'हिंदी',
+      'te': 'తెలుగు',
+      'gu': 'ગુજરાતી',
+      'ta': 'தமிழ்',
+    };
+    const langName = langNames[lang];
     toast.success(`${getTranslations(lang).languageChanged} ${langName}! 🌍`);
   };
 
