@@ -3,14 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserSettings, useUpdateUserSettings, useUserProfile } from "@/hooks/useUserSettings";
 import { useSubscriptions, useMonthlySpending } from "@/hooks/useSubscriptions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language, setLanguage } = useLanguage();
+  const queryClient = useQueryClient();
   const { data: settings, isLoading: settingsLoading } = useUserSettings();
   const { data: profile, isLoading: profileLoading } = useUserProfile();
   const { data: subscriptions = [] } = useSubscriptions();
@@ -33,6 +38,40 @@ const Settings = () => {
     }
   };
 
+  const updateLanguage = useMutation({
+    mutationFn: async (newLanguage: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("users")
+        .update({ language: newLanguage })
+        .eq("id", user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+  });
+
+  const handleLanguageChange = async (value: string) => {
+    try {
+      setLanguage(value as 'en' | 'hi' | 'te' | 'gu' | 'ta');
+      await updateLanguage.mutateAsync(value);
+      toast({
+        title: "Language updated",
+        description: "Your language preference has been saved.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update language",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -48,6 +87,17 @@ const Settings = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const getLanguageName = (lang: string) => {
+    const names: Record<string, string> = {
+      'en': 'English',
+      'hi': 'हिंदी (Hindi)',
+      'te': 'తెలుగు (Telugu)',
+      'gu': 'ગુજરાતી (Gujarati)',
+      'ta': 'தமிழ் (Tamil)',
+    };
+    return names[lang] || 'English';
   };
 
   return (
@@ -168,15 +218,23 @@ const Settings = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Preferences</h3>
           
-          <button className="w-full card-glass flex items-center justify-between">
-            <span className="font-medium">Language</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {profile?.language || "English"}
-              </span>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          <div className="card-glass">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Language</span>
+              <Select value={language} onValueChange={handleLanguageChange}>
+                <SelectTrigger className="w-[200px] bg-background border-border">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border z-50">
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="hi">हिंदी (Hindi)</SelectItem>
+                  <SelectItem value="te">తెలుగు (Telugu)</SelectItem>
+                  <SelectItem value="gu">ગુજરાતી (Gujarati)</SelectItem>
+                  <SelectItem value="ta">தமிழ் (Tamil)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </button>
+          </div>
         </div>
 
         {/* Premium */}
