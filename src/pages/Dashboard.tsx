@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import heroUser from "@/assets/hero-user.png";
 import { useSubscriptions, useMonthlySpending, useExpiringSubscriptions } from "@/hooks/useSubscriptions";
 import { useAlerts } from "@/hooks/useAlerts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categoryIcons: Record<string, string> = {
   Entertainment: "🎬",
@@ -18,6 +19,7 @@ const categoryIcons: Record<string, string> = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { data: subscriptions = [], isLoading: subsLoading } = useSubscriptions();
   const { data: monthlySpending = 0, isLoading: spendingLoading } = useMonthlySpending();
   const { data: alerts = [], isLoading: alertsLoading } = useAlerts("All");
@@ -80,7 +82,7 @@ const Dashboard = () => {
             ) : (
               <div className="text-5xl font-bold">₹{monthlySpending.toLocaleString("en-IN")}</div>
             )}
-            <div className="text-sm mt-2 opacity-90">Monthly Spending</div>
+            <div className="text-sm mt-2 opacity-90">{t.monthlySpending}</div>
           </div>
           <div className="stat-card bg-gradient-to-br from-secondary to-secondary/80">
             {spendingLoading ? (
@@ -88,7 +90,7 @@ const Dashboard = () => {
             ) : (
               <div className="text-5xl font-bold">₹{annualCost.toLocaleString("en-IN")}</div>
             )}
-            <div className="text-sm mt-2 opacity-90">Annual Cost</div>
+            <div className="text-sm mt-2 opacity-90">{t.annualCost}</div>
           </div>
           <div className="stat-card bg-gradient-to-br from-purple-600 to-purple-500">
             {subsLoading ? (
@@ -96,7 +98,7 @@ const Dashboard = () => {
             ) : (
               <div className="text-5xl font-bold">{subscriptionCount}</div>
             )}
-            <div className="text-sm mt-2 opacity-90">Active Subscriptions</div>
+            <div className="text-sm mt-2 opacity-90">{t.activeSubscriptions}</div>
           </div>
         </div>
 
@@ -107,13 +109,13 @@ const Dashboard = () => {
               <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="font-medium text-foreground">
-                  ⚠️ {urgentCount} renewal{urgentCount > 1 ? "s" : ""} coming up in the next 7 days
+                  ⚠️ {urgentCount} {t.renewingSoon}
                 </p>
                 <button
                   onClick={() => navigate("/alerts")}
                   className="text-sm text-primary hover:underline mt-1"
                 >
-                  View Details
+                  {t.viewDetails}
                 </button>
               </div>
             </div>
@@ -146,9 +148,9 @@ const Dashboard = () => {
             </div>
           ) : subscriptions.length === 0 ? (
             <div className="card-glass text-center py-12">
-              <p className="text-muted-foreground mb-4">No subscriptions yet</p>
+              <p className="text-muted-foreground mb-4">{t.noSubscriptions}</p>
               <Button onClick={() => navigate("/add-subscription")}>
-                Add Your First Subscription
+                {t.addSubscription}
               </Button>
             </div>
           ) : (
@@ -177,7 +179,7 @@ const Dashboard = () => {
                           </span>
                           {isUrgent && (
                             <span className="text-xs px-2 py-1 bg-accent/10 text-accent rounded-md font-medium">
-                              {daysLeft} day{daysLeft !== 1 ? "s" : ""} left
+                              {daysLeft} {t.daysLeft}
                             </span>
                           )}
                         </div>

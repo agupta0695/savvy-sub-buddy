@@ -14,7 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const queryClient = useQueryClient();
   const { data: settings, isLoading: settingsLoading } = useUserSettings();
   const { data: profile, isLoading: profileLoading } = useUserProfile();
@@ -111,7 +111,7 @@ const Settings = () => {
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-semibold">Settings</h1>
+            <h1 className="text-xl font-semibold">{t.settings}</h1>
           </div>
           <button className="p-2 hover:bg-muted rounded-lg transition-colors">
             <MoreVertical className="w-6 h-6" />
@@ -140,7 +140,7 @@ const Settings = () => {
                 <h2 className="text-xl font-bold">{profile?.name || "User"}</h2>
                 <p className="text-sm text-muted-foreground">{profile?.email}</p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {subscriptions.length} subscriptions tracked • ₹{monthlySpending.toLocaleString("en-IN")} monthly
+                  {subscriptions.length} {t.subscriptionsTracked} • ₹{monthlySpending.toLocaleString("en-IN")} {t.monthly.toLowerCase()}
                 </p>
               </div>
             </div>
@@ -149,7 +149,7 @@ const Settings = () => {
 
         {/* Notifications */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Notifications</h3>
+          <h3 className="text-lg font-semibold">{t.notifications}</h3>
           
           {settingsLoading ? (
             <div className="space-y-4">
@@ -162,7 +162,7 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">Push Notifications</span>
+                    <span className="font-medium">{t.pushNotifications}</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <Switch
@@ -175,7 +175,7 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">SMS Alerts (Premium)</span>
+                    <span className="font-medium">{t.smsAlerts}</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <Switch
@@ -188,7 +188,7 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">WhatsApp Alerts (Premium)</span>
+                    <span className="font-medium">{t.whatsappAlerts}</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <Switch
@@ -201,7 +201,7 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">Email Alerts</span>
+                    <span className="font-medium">{t.smsAlerts}</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <Switch
@@ -216,11 +216,11 @@ const Settings = () => {
 
         {/* Preferences */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Preferences</h3>
+          <h3 className="text-lg font-semibold">{t.preferences}</h3>
           
           <div className="card-glass">
             <div className="flex items-center justify-between">
-              <span className="font-medium">Language</span>
+              <span className="font-medium">{t.language}</span>
               <Select value={language} onValueChange={handleLanguageChange}>
                 <SelectTrigger className="w-[200px] bg-background border-border">
                   <SelectValue placeholder="Select language" />
@@ -242,30 +242,30 @@ const Settings = () => {
           <div className="flex items-start gap-3 mb-4">
             <Zap className="w-6 h-6 text-purple-600" />
             <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-2">Upgrade to Pro</h3>
+              <h3 className="font-semibold text-lg mb-2">{t.upgradeToPro}</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• SMS Auto-Import</li>
-                <li>• Family Sharing</li>
-                <li>• Advanced Analytics</li>
+                <li>• {t.smsAutoImport}</li>
+                <li>• {t.familySharing}</li>
+                <li>• {t.advancedAnalytics}</li>
               </ul>
             </div>
           </div>
           <Button onClick={() => navigate("/premium")} className="w-full btn-primary">
-            Upgrade Now
+            {t.upgradeNow}
           </Button>
         </div>
 
         {/* Data */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Data Management</h3>
+          <h3 className="text-lg font-semibold">{t.data}</h3>
           
           <button className="w-full card-glass flex items-center justify-between">
-            <span className="font-medium">Export My Data</span>
+            <span className="font-medium">{t.exportMyData}</span>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
 
           <button className="w-full card-glass flex items-center justify-between">
-            <span className="font-medium">Privacy Policy</span>
+            <span className="font-medium">{t.privacyPolicy}</span>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -277,11 +277,11 @@ const Settings = () => {
             className="w-full h-12 text-destructive border-destructive hover:bg-destructive/10"
             onClick={handleLogout}
           >
-            Logout
+            {t.logout}
           </Button>
           
           <button className="w-full text-center text-sm text-muted-foreground hover:text-foreground">
-            Delete Account
+            {t.deleteAccount}
           </button>
         </div>
       </main>

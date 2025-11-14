@@ -10,6 +10,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUpdateSubscription } from "@/hooks/useSubscriptions";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categories = ["Entertainment", "Fitness", "Software", "Shopping", "Food", "Other"];
 
@@ -42,6 +43,7 @@ const AddSubscription = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState("Entertainment");
   const [formData, setFormData] = useState({
@@ -189,8 +191,8 @@ const AddSubscription = () => {
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-semibold">Edit Subscription</h1>
-            <span className="text-sm text-muted-foreground">Loading...</span>
+            <h1 className="text-xl font-semibold">{t.editSubscription}</h1>
+            <span className="text-sm text-muted-foreground">{t.loading}</span>
           </div>
         </header>
         <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
@@ -213,7 +215,7 @@ const AddSubscription = () => {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-semibold">{isEditMode ? "Edit Subscription" : "Add Subscription"}</h1>
+          <h1 className="text-xl font-semibold">{isEditMode ? t.editSubscription : t.addSubscription}</h1>
           <span className="text-sm text-muted-foreground">{isEditMode ? "" : "Step 1 of 3"}</span>
         </div>
       </header>
@@ -221,7 +223,7 @@ const AddSubscription = () => {
       <main className="max-w-2xl mx-auto px-6 py-8">
         <div className="space-y-6">
           <div>
-            <Label htmlFor="name">Subscription Name</Label>
+            <Label htmlFor="name">{t.serviceName}</Label>
             <Input
               id="name"
               placeholder="e.g., Netflix, Spotify, Gym"
@@ -232,7 +234,7 @@ const AddSubscription = () => {
           </div>
 
           <div>
-            <Label htmlFor="amount">Amount (₹)</Label>
+            <Label htmlFor="amount">{t.amount} (₹)</Label>
             <Input
               id="amount"
               type="number"
@@ -244,21 +246,21 @@ const AddSubscription = () => {
           </div>
 
           <div>
-            <Label htmlFor="cycle">Billing Cycle</Label>
+            <Label htmlFor="cycle">{t.billingCycle}</Label>
             <select
               id="cycle"
               className="mt-2 w-full h-14 px-4 rounded-xl border border-input bg-background"
               value={formData.billingCycle}
               onChange={(e) => setFormData({ ...formData, billingCycle: e.target.value })}
             >
-              <option>Monthly</option>
-              <option>Quarterly</option>
-              <option>Annual</option>
+              <option>{t.monthly}</option>
+              <option>{t.quarterly}</option>
+              <option>{t.annual}</option>
             </select>
           </div>
 
           <div>
-            <Label htmlFor="date">Next Renewal Date</Label>
+            <Label htmlFor="date">{t.nextRenewalDate}</Label>
             <Input
               id="date"
               type="date"
@@ -270,7 +272,7 @@ const AddSubscription = () => {
           </div>
 
           <div>
-            <Label>Category</Label>
+            <Label>{t.category}</Label>
             <div className="flex flex-wrap gap-2 mt-2">
               {categories.map((cat) => (
                 <button
@@ -282,7 +284,7 @@ const AddSubscription = () => {
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  {cat}
+                  {t[cat.toLowerCase() as keyof typeof t]}
                 </button>
               ))}
             </div>
@@ -311,11 +313,11 @@ const AddSubscription = () => {
           >
             {isEditMode
               ? updateSubscription.isPending
-                ? "Updating..."
-                : "Update Subscription"
+                ? `${t.loading}`
+                : t.editSubscription
               : addSubscription.isPending
-              ? "Adding..."
-              : "Add Subscription"}
+              ? `${t.loading}`
+              : t.addSubscription}
           </Button>
         </div>
       </main>
