@@ -175,6 +175,19 @@ const Settings = () => {
               <div className="card-glass">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
+                    <span className="font-medium">Email Alerts</span>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <Switch
+                    checked={settings?.email_alerts ?? true}
+                    onCheckedChange={(checked) => handleSettingChange("email_alerts", checked)}
+                  />
+                </div>
+              </div>
+
+              <div className="card-glass">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
                     <span className="font-medium">{t.smsAlerts}</span>
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
@@ -194,19 +207,6 @@ const Settings = () => {
                   <Switch
                     checked={settings?.whatsapp_alerts ?? false}
                     onCheckedChange={(checked) => handleSettingChange("whatsapp_alerts", checked)}
-                  />
-                </div>
-              </div>
-
-              <div className="card-glass">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">Email Alerts</span>
-                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <Switch
-                    checked={settings?.email_alerts ?? true}
-                    onCheckedChange={(checked) => handleSettingChange("email_alerts", checked)}
                   />
                 </div>
               </div>
