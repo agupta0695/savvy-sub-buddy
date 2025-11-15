@@ -2,17 +2,11 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/6be39fb6-cb94-4c1a-b076-cc1ff79bbd78
+SubSentry – Smart Subscription Tracker (MVP)
 
-## How can I edit this code?
+SubSentry is a mobile-first web app that helps users track all their recurring subscriptions in one place and avoid surprise renewal charges. Designed for budget-conscious professionals in Tier 1 & Tier 2 Indian cities, the app offers manual logging, a clean spending dashboard, proactive 7-day renewal alerts, and cancellation guidance. Built using a research-driven PRD and a clear brand identity, the MVP demonstrates core flows like login, adding subscriptions, and viewing spending insights. SubSentry aims to reduce subscription creep and help users save ₹500–800 per month.
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/6be39fb6-cb94-4c1a-b076-cc1ff79bbd78) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+**URL**: [https://lovable.dev/projects/6be39fb6-cb94-4c1a-b076-cc1ff79bbd78](https://savvy-sub-buddy.lovable.app)
 
 **Use your preferred IDE**
 
